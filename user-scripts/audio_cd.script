@@ -1,0 +1,29 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : user-scripts
+# File            : audio_cd.script
+# Version         : $Id: audio_cd.script 244625 2008-09-02 12:54:44Z blino $
+# Author          : Frederic Lepied
+# Created On      : Fri Jan 30 17:01:34 2004
+# Purpose         : launch an audio CD reader when an audio CD is inserted
+#---------------------------------------------------------------
+
+. /usr/share/dynamic/functions.script
+
+if under_gnome; then
+    launch sound-juicer --play --device="$DEV"
+    launch gnome-cd --unique --play --device "$DEV"
+    launch totem "$DEV"
+fi
+
+if under_xfce; then
+    launch exaile --play-cd --start-minimized --no-equalizer
+fi
+
+launch kscd --start "$DEV"
+launch gnome-cd --unique --play --device "$DEV"
+
+echo "No application to play an audio CD"
+
+# audio_cd.script ends here

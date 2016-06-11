@@ -1,0 +1,32 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : user-scripts
+# File            : ipod.script
+# Version         : $Id$
+# Author          : Götz Waschk
+# Created On      : Fri Dec 07 12:12:12 2007
+# Purpose         : launch an iPod manager when an iPod is connected
+#---------------------------------------------------------------
+
+. /usr/share/dynamic/functions.script
+
+if under_gnome; then
+    launch rhythmbox
+    launch banshee
+fi
+
+if under_xfce; then
+    launch exaile
+fi
+
+launch amarok
+launch rhythmbox
+launch banshee
+launch gtkpod
+launch dopi
+launch hipo
+
+echo "No application to handle an iPod"
+
+# ipod.script ends here

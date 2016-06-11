@@ -1,0 +1,99 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : /etc/dynamic/scripts/lp.script
+# Version         : $Id: lp.script 107533 2006-04-21 13:10:10Z tkamppeter $
+# Author          : Frederic Lepied and Till Kamppeter
+# Created On      : Thu Sep 13 01:09:08 2001
+# License         : GPL
+# Purpose         : script is run when a new printer is plugged.
+#---------------------------------------------------------------
+
+. /etc/dynamic/scripts/functions.script
+
+# default printing auto admin settings
+AUTO_SETUP_QUEUES_ON_PRINTER_CONNECTED=yes
+ENABLE_QUEUES_ON_PRINTER_CONNECTED=no
+AUTO_SETUP_QUEUES_MODE=waitforgui
+
+# source printing auto admin configuration
+if [ -r /etc/sysconfig/printing ]; then
+    . /etc/sysconfig/printing
+fi
+
+function plug_n_print {
+
+    # This function takes care of automatic print queue setup in the case
+    # that the printer currently plugged in ha no queue yet
+
+    # nothing else is needed on a remove event
+    [ "$ACTION" = "remove" ] && return
+
+    if [ "$AUTO_SETUP_QUEUES_ON_PRINTER_CONNECTED" == "yes" ] || \
+       [ "$ENABLE_QUEUES_ON_PRINTER_CONNECTED" == "yes" ]; then
+	# No drakxtools installed? Forget about automatic
+	# print queue generation
+	[ ! -x /usr/sbin/autosetupprintqueues ] && return
+	# Only start automatic print queue generation if it is
+	# not already running
+	ps auxwww | grep 'perl /usr/sbin/autosetupprintqueues' | grep -vq grep && return
+	ps auxwww | grep 'perl /usr/sbin/printerdrake' | grep -vq grep && return
+	# Let the dirty work (determining whether there is already a queue
+	# and setting up the queue be done by printerdrake)
+	autosetupprintqueues --$AUTO_SETUP_QUEUES_MODE &
+    fi
+}
+
+check_activated $0
+
+MODE=660
+OWNER=lp.sys
+
+if [ -x /usr/sbin/update-alternatives ]; then
+    TYPE=`/usr/sbin/update-alternatives --display lpr 2> /dev/null | grep currently | cut -f 6 -d ' '`
+    case "$TYPE" in
+	*lpd)  MODE=660; OWNER=lp.lp;;
+	*cups) MODE=660; OWNER=lp.sys;;
+	*pdq)  MODE=666;;	# should be done via pam_console
+    esac
+fi
+
+chmod $MODE $DEVNAME
+chown $OWNER $DEVNAME
+
+# Named pipe of oki4daemon
+if [ -e /dev/oki4drv ]; then
+    chmod $MODE /dev/oki4drv
+    chown $OWNER /dev/oki4drv
+fi
+
+# Printer devices for HP multi-function devices under "hpoj"
+# The devices themselves
+if [ -d /dev/ptal-printd ]; then
+    for file in /dev/ptal-printd/*; do
+	chmod $MODE $file
+	chown $OWNER $file
+    done
+fi
+# The entries in /lib/dev-state, HPOJ makes entries whenever it is started,
+# so correct them to assure all is OK when we reboot
+if [ -d /lib/dev-state/ptal-printd ]; then
+    for file in /lib/dev-state/ptal-printd/*; do
+	chmod $MODE $file
+	chown $OWNER $file
+    done
+fi
+
+# Is HPOJ running on this box? Restart it to get HPOJ taking into
+# account the new device.
+if service hpoj status > /dev/null 2>&1; then
+     service hpoj restart
+fi
+
+# take needed actions for cups
+plug_n_print $ACTION $DEVNAME
+
+call_hooks $ACTION lp $DEVNAME ""
+
+# lp.script ends here

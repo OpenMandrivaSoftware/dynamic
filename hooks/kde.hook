@@ -1,0 +1,17 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : kde.hook
+# Version         : $Id: kde.hook 223977 2007-06-26 00:13:24Z adamw $
+# Author          : Frederic Lepied
+# Created On      : Wed Aug  8 11:32:16 2001
+# License         : GPL
+# Purpose         : hook to handle KDE desktop entries
+#---------------------------------------------------------------
+
+. /etc/dynamic/scripts/functions.script
+
+handle_entry "$@" kde /usr/share/apps/kdesktop/Desktop
+
+# kde.hooks ends here

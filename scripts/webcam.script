@@ -1,0 +1,36 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : webcam.script
+# Version         : $Id: webcam.script 223977 2007-06-26 00:13:24Z adamw $
+# Author          : Frederic Lepied
+# Created On      : Thu Sep 13 01:09:08 2001
+# License         : GPL
+# Purpose         : script run when a webcam is plugged.
+#---------------------------------------------------------------
+
+. /etc/dynamic/scripts/functions.script
+
+check_activated $0
+
+base="`basename $DEVNAME`"
+number="`echo $base | sed 's/[a-z]*//g'`"
+sysfilename="/sys/class/video4linux/vbi$number"
+procfilename="/proc/video/dev/$base"
+is_tvtuner=
+
+for f in /sys/class/video4linux/vbi*; do
+    if [ -r $f/device -a -r /sys/$DEVPATH/device ] && cmp $f/device /sys/$DEVPATH/device; then
+	is_tvtuner=1
+	break
+    fi
+done
+
+if [ -n "$is_tvtuner" ] || grep -q VID_TYPE_TUNER $procfilename > /dev/null 2>&1; then
+   call_hooks $ACTION tvtuner $DEVNAME ""
+else
+   call_hooks $ACTION webcam $DEVNAME ""
+fi
+
+# webcam.script ends here

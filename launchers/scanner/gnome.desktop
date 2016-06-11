@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=XSane $device
+Comment=XSane
+Exec=/usr/bin/xsane
+Terminal=false
+Icon=xsane.xpm
+Type=Application

@@ -1,0 +1,19 @@
+# dynamic desktop and co
+
+REGISTER	.*/part.*	EXECUTE /etc/dynamic/scripts/part.script add $devpath
+UNREGISTER	.*/part.*	EXECUTE /etc/dynamic/scripts/part.script remove $devpath
+
+REGISTER	v4l/video.*	EXECUTE /etc/dynamic/scripts/webcam.script add $devpath
+UNREGISTER	v4l/video.*	EXECUTE /etc/dynamic/scripts/webcam.script remove $devpath
+
+REGISTER	usb/scanner.*	EXECUTE /etc/dynamic/scripts/scanner.script add $devpath
+UNREGISTER	usb/scanner.*	EXECUTE /etc/dynamic/scripts/scanner.script remove $devpath
+
+REGISTER	usb/rio500	EXECUTE /etc/dynamic/scripts/rio500.script add $devpath
+UNREGISTER	usb/rio500	EXECUTE /etc/dynamic/scripts/rio500.script remove $devpath
+
+REGISTER	usb/tts/[13579]	EXECUTE /etc/dynamic/scripts/visor.script add $devpath
+UNREGISTER	usb/tts/[13579]	EXECUTE /etc/dynamic/scripts/visor.script remove $devpath
+
+REGISTER	(usb/lp.*|printers/.*)	EXECUTE /etc/dynamic/scripts/lp.script add $devpath
+UNREGISTER	(usb/lp.*|printers/.*)	EXECUTE /etc/dynamic/scripts/lp.script remove $devpath

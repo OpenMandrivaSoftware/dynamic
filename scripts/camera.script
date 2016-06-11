@@ -1,0 +1,19 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : camera.script
+# Version         : $Id: camera.script 223977 2007-06-26 00:13:24Z adamw $
+# Author          : Frederic Lepied
+# Created On      : Tue Aug 13 14:45:41 2002
+# License         : GPL
+# Purpose         : script run when a camera is plugged.
+#---------------------------------------------------------------
+
+. /etc/dynamic/scripts/functions.script
+
+check_activated $0
+
+call_hooks $ACTION camera $DEVNAME ""
+
+# camera.script ends here

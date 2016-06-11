@@ -1,0 +1,80 @@
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : functions.script
+# Version         : $Id: functions.script 254719 2009-03-25 15:55:53Z fcrozat $
+# Author          : Frederic Lepied
+# Created On      : Wed Aug  8 11:32:16 2001
+# License         : GPL
+# Purpose         : generic functions used by the dynamic scripts
+#---------------------------------------------------------------
+
+PATH=/sbin:/usr/sbin:/bin:/usr/bin
+export PATH
+
+# fill undefined environment variables with command line options
+if [ -z "$ACTION" ]; then
+   ACTION=$1
+   export ACTION
+fi
+if [ -z "$DEVNAME" ]; then
+   DEVNAME=$2
+   export DEVNAME
+fi
+
+function call_hooks() {
+    if [ $ACTION = add -a -x /sbin/pam_console_apply ]; then
+	/sbin/pam_console_apply
+    fi
+    
+    for f in /etc/dynamic/hooks/*.hook; do
+	$f "$@"
+    done
+}
+
+LAUNCHERS=/etc/dynamic/launchers
+
+function handle_entry() {
+    action=$1
+    type=$2
+    device=$3
+    descr=$4
+    desktop=$5
+    dir=$6
+
+    [ -d $dir ] || return
+    
+    basename=`basename $device`
+    
+    # generate a uniq filename
+    name=$dir/dynamic`echo -n $device | sed 's@/@_@g'`_dynamic.desktop
+
+    if [ "$action" = add -a -f $LAUNCHERS/$type/$desktop.desktop ]; then
+        # wait for read write access
+	while ! touch $name; do
+	    sleep 2
+	done
+
+	# use sysfs info if provided
+	if [ -n "$DEVPATH" -a -f /sys/$DEVPATH/name ]; then
+	    devicename=`cat /sys/$DEVPATH/name`
+	elif [ -n "$PRODUCT" ]; then
+	    usb_idVendor="`echo $PRODUCT | cut -f1 -d/`"
+	    usb_idProduct="`echo $PRODUCT | cut -f2 -d/`"
+	    devicename="`lsusb -d 0x$usb_idVendor:0x$usb_idProduct | sed s/.*[0-9a-f]*:[0-9a-f]*\ //`"
+	fi
+	
+	cat $LAUNCHERS/$type/$desktop.desktop | sed -e "s@\$devicename@$devicename@g" -e "s@\$device@$device@g" -e "s@\$descr@$descr@g" -e "s@\$basename@$basename@g" > $name 2> /dev/null
+	echo "# dynamic_device=$device" >> $name
+	chmod 755 $name
+    else
+	rm -f $name
+    fi
+}
+
+function check_activated() {
+    name=`basename $0 .script | awk '{print toupper($0);}'`
+    [ -r /etc/sysconfig/system ] && egrep -q "^DYNAMIC(_$name)?=yes$" /etc/sysconfig/system || exit 0
+}
+
+# functions.script ends here

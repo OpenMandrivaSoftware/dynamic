@@ -1,0 +1,69 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : part.script
+# Version         : $Id: part.script 223977 2007-06-26 00:13:24Z adamw $
+# Author          : Frederic Lepied
+# Created On      : Thu Sep 13 01:09:08 2001
+# License         : GPL
+# Purpose         : script run when a new partition is found.
+#---------------------------------------------------------------
+
+. /etc/dynamic/scripts/functions.script
+
+check_activated $0
+
+# try to catch calls from rc.sysinit
+case `runlevel` in
+    unknown) exit 0;;
+esac
+
+if [ -x /usr/sbin/drakupdate_fstab ]; then
+    /usr/sbin/drakupdate_fstab --auto --$ACTION $DEVNAME | while read mpoint type; do
+        if [ "$ACTION" == add ]; then
+	    [ ! -d $mpoint ] && mkdir $mpoint
+	    mount $mpoint
+	    if [ $type == supermount ]; then
+		call_hooks add supermount $mpoint $mpoint
+	    else
+		call_hooks add part $mpoint $mpoint
+	    fi
+	else
+	    if grep -q "[[:space:]]$mpoint[[:space:]]" /proc/mounts; then
+		fuser -skm $mpoint
+		umount $mpoint
+	    fi
+	    [ -d $mpoint ] && rmdir $mpoint
+	    call_hooks remove part $mpoint $mpoint
+	fi
+    done
+elif [ -x /usr/sbin/updfstab ]; then
+    rm -f /etc/fstab.dynamic
+    /usr/sbin/updfstab -t > /etc/fstab.dynamic || exit 0
+    diff -c /etc/fstab /etc/fstab.dynamic | grep '^[-+]' | grep dev | grep mnt | while read d dev mpoint rest; do
+        # floppy and cdrom are handled by default (mandrake_desk...)
+	if [ "$mpoint" = /mnt/cdrom -o "$mpoint" = /mnt/floppy ]; then
+	    continue
+	fi
+	case $d in
+	'+')
+	    [ ! -d $mpoint ] && mkdir $mpoint
+	    cp -f /etc/fstab.dynamic /etc/fstab
+	    call_hooks add part $mpoint $dev
+	    ;;
+	'-')
+	    if grep -q "[[:space:]]$mpoint[[:space:]]" /proc/mounts; then
+		fuser -skm $mpoint
+		umount $mpoint
+	    fi
+	    [ -d $mpoint ] && rmdir $mpoint
+	    cp -f /etc/fstab.dynamic /etc/fstab
+	    call_hooks remove part $mpoint $dev
+	    ;;
+        esac
+    done
+    rm -f /etc/fstab.dynamic
+fi
+
+# part.script ends here

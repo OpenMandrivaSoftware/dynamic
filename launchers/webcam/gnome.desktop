@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Ekiga $device
+Comment=Ekiga
+Exec=/usr/bin/ekiga -a
+Terminal=false
+Icon=ekiga
+Type=Application

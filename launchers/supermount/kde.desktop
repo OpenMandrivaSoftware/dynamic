@@ -1,0 +1,4 @@
+[Desktop Entry]
+Icon=hdd_mount
+Type=Link
+URL=$device

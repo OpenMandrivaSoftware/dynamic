@@ -1,0 +1,52 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : user-scripts
+# File            : digicam.script
+# Version         : $Id: digicam.script 244625 2008-09-02 12:54:44Z blino $
+# Author          : Frederic Lepied
+# Created On      : Fri Jan 30 17:01:34 2004
+# Purpose         : launch an digicam photo importer when an digicam is plugged
+#---------------------------------------------------------------
+
+. /usr/share/dynamic/functions.script
+
+MOUNT_POINT=`hal-get-property --udi $DEV --key volume.mount_point`
+if test "$MOUNT_POINT" == ""; then
+	  if under_gnome; then
+		launch f-spot-import $DEV
+		launch gthumb --import-photos
+	  elif under_xfce; then
+		launch gthumb --import-photos
+	  else
+		if test -f /usr/share/services/kamera.protocol ; then
+			launch konqueror camera:/
+		else
+			launch digikam --detect-camera
+		fi
+	  fi
+else
+	  if under_gnome; then
+		  VIEWER="f-spot --import"
+	  else
+		  VIEWER=konqueror
+	  fi
+	  
+        if [ -d "$MOUNT_POINT/dcim" ]; then
+                launch $VIEWER "$MOUNT_POINT/dcim"
+        elif [ -d  "$MOUNT_POINT/DCIM" ]; then
+                launch $VIEWER "$MOUNT_POINT/DCIM"
+        else
+               launch $VIEWER "$MOUNT_POINT"
+        fi
+fi
+
+launch f-spot-import
+launch gtkam 
+launch kuickshow
+launch digikam
+launch flphoto
+
+echo "No application to play import photos"
+
+# digicam.script ends here

@@ -1,0 +1,41 @@
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : user-scripts
+# File            : functions.script
+# Version         : $Id: functions.script 244625 2008-09-02 12:54:44Z blino $
+# Author          : Frederic Lepied
+# Created On      : Tue Feb 10 07:02:38 2004
+# Purpose         : common functions sourced by /etc/dynamic/user-scripts
+#                 scripts.
+#---------------------------------------------------------------
+
+DEV="$1"
+TYPE=`basename $0 .script`
+
+function under_gnome() {
+    /sbin/pidof gnome-session > /dev/null
+    return $?
+}
+
+function under_xfce() {
+    /sbin/pidof xfce4-session > /dev/null
+    return $?
+}
+
+function launch() {
+    type -p "$1" > /dev/null && exec "$@"
+}
+
+[ -r /etc/dynamic/user-scripts/config ] && . /etc/dynamic/user-scripts/config
+[ -r ~/.dynamic ] && . ~/.dynamic
+
+eval LAUNCHER=\$"${TYPE}_launcher"
+
+[ -n "$LAUNCHER" ] && launch $LAUNCHER
+
+#
+# Local variables:
+# mode: shell-script
+# End:
+#
+# functions.script ends here

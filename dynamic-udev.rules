@@ -1,0 +1,6 @@
+# Dynamic rules for udev
+
+KERNEL=="video[0-9]*",		RUN+="/bin/sh -c '/etc/dynamic/scripts/webcam.script &'"
+KERNEL=="usb/rio500[0-9]*",	RUN+="/bin/sh -c '/etc/dynamic/scripts/rio500.script &'"
+KERNEL=="ttyUSB[13579]*",	RUN+="/bin/sh -c '/etc/dynamic/scripts/visor.script &'"
+KERNEL=="lp[0-9]*",		RUN+="/bin/sh -c '/etc/dynamic/scripts/lp.script &'"

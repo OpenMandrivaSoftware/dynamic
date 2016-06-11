@@ -1,0 +1,22 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : gnome.hook
+# Version         : $Id: gnome.hook 223977 2007-06-26 00:13:24Z adamw $
+# Author          : Frederic Lepied
+# Created On      : Wed Aug  8 11:32:16 2001
+# License         : GPL
+# Purpose         : hook to handle GNOME desktop entries
+#---------------------------------------------------------------
+
+. /etc/dynamic/scripts/functions.script
+
+# nautilus monitors /etc/fstab by itself
+if [ $2 = part ]; then
+    exit 0
+fi
+
+handle_entry "$@" gnome /var/lib/gnome/desktop
+
+# gnome.hooks ends here

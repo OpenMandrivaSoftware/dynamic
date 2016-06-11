@@ -1,0 +1,49 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : rawdevice.script
+# Version         : $Id: rawdevice.script 223977 2007-06-26 00:13:24Z adamw $
+# Author          : Pixel
+# Created On      : Sat Jul 20 13:51:55 CEST 2002
+# License         : GPL
+# Purpose         : script run to bind a new rawdevice and access it via a symlink
+# Example of use  : rawdevice.script add /dev/ide/host0/bus0/target0/lun0/cd /dev/rdvd
+#---------------------------------------------------------------
+
+
+. /etc/dynamic/scripts/functions.script
+
+check_activated $0
+
+case "$ACTION" in
+    add)
+	[ -e $3 ] && exit 0
+
+	# force "raw" loading; it will not be loaded automagically
+	# because we run as devfs action and no module loading happens
+	# in this case
+	/sbin/modprobe raw >/dev/null 2>&1
+
+        already_in_use=`raw -qa`
+        n=1
+        while :; do
+            echo $already_in_use | grep -q raw/raw$n || {
+ 	        raw /dev/raw/raw$n $DEVNAME >/dev/null || exit 1
+	        ln -sf raw/raw$n $3 
+	        exit 0
+            }
+            n=$[n+1]
+        done
+	;;
+    remove)
+	raw $DEVNAME 0 0 >/dev/null
+	rm -f $DEVNAME
+	;;
+    *)
+	echo "Usage: $0 add <device> <raw_device_symlink>"
+	echo "       $0 remove <raw_device_symlink>"
+	exit 1
+esac
+
+# rawdevice.script ends here

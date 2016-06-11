@@ -1,0 +1,36 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : user-scripts
+# File            : blank_cd.script
+# Version         : $Id: blank_cd.script 244625 2008-09-02 12:54:44Z blino $
+# Author          : Frederic Lepied
+# Created On      : Fri Jan 30 17:02:00 2004
+# Purpose         : lanch a CD burner when a blank CD is inserted
+#---------------------------------------------------------------
+
+. /usr/share/dynamic/functions.script
+
+if under_gnome; then
+    [ -x /usr/bin/nautilus-cd-burner ] && launch nautilus --no-desktop --browser burn:
+fi
+
+if under_xfce; then
+    launch xfburn
+fi
+
+if [ ! $(/sbin/pidof k3b) ] ; then
+	launch k3b
+	[ -x /usr/bin/nautilus-cd-burner ] && launch nautilus --no-desktop --browser burn:
+	launch serpentine
+	launch brasero
+	launch graveman
+	launch gnomebaker
+	launch gcdmaster
+	launch xcdroast
+	launch gcombust
+	launch eroaster
+	echo "No application to burn a blank CD"
+fi
+
+# blank_cd.script ends here

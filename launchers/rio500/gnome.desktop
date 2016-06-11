@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Walk500
+Comment=Rio500 interface
+Exec=/usr/bin/walk500
+Terminal=false
+Icon=/usr/share/walk500/gnome-walk500.png
+Type=Application

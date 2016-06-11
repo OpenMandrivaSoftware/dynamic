@@ -1,0 +1,51 @@
+#!/bin/sh
+#---------------------------------------------------------------
+# Project         : Mandriva Linux
+# Module          : dynamic
+# File            : visor.script
+# Version         : $Id: visor.script 223977 2007-06-26 00:13:24Z adamw $
+# Author          : Frederic Lepied
+# Created On      : Thu Sep 13 01:09:08 2001
+# License         : GPL
+# Purpose         : script run when a new visor or palm is plugged.
+#---------------------------------------------------------------
+
+. /etc/dynamic/scripts/functions.script
+. /etc/sysconfig/usb
+
+check_activated $0
+
+[ -z "$DEVNAME" ] && exit 0
+
+if [ $ACTION = add ]; then
+
+  if [ -r /proc/bus/usb/devices ]; then  
+LIST="Vendor=0830 ProdID=0050|\
+Vendor=0830 ProdID=0031|\
+Vendor=054c ProdID=0066|\
+Vendor=054c ProdID=0169|\
+Vendor=054c ProdID=0144|\
+Vendor=054c ProdID=0144|\
+Vendor=091e ProdID=0004"
+    grep -q -E "$LIST" /proc/bus/usb/devices 
+    RETVAL=$?
+ 
+    if [ $RETVAL = 0 -o "$VISOR_SWAP" = "yes" -o "$VISOR_SWAP" = "true" ]; then
+    # found in list, use ttyNUM-1
+       PILOTDEVICE="${DEVNAME/%?/}$((${DEVNAME/*[[:alpha:]]/}-1))"
+     else
+    # not found in list
+       PILOTDEVICE=$DEVNAME
+    fi
+  else
+       PILOTDEVICE=$DEVNAME
+  fi
+    
+    ln -sf $PILOTDEVICE /dev/pilot
+else
+    rm -f /dev/pilot
+fi
+
+call_hooks $ACTION visor $DEVNAME ""
+
+# visor.script ends here
